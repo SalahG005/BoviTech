@@ -6,6 +6,54 @@ This project was developed as part of an academic program at **[ESPRIT School of
 
 ---
 
+## Mobile app screenshots
+
+Operator UI built with **Expo / React Native** (`main-bovitech-main/`). Flow: onboarding → herd dashboard → cow detail → vocal AI analysis.
+
+### Welcome & authentication
+
+<p align="center">
+  <img src="docs/screenshots/01-welcome.png" alt="BoviTech welcome screen — Surveille, Analyse, Optimise" width="260" />
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/02-login.png" alt="BoviTech login screen" width="260" />
+</p>
+
+<p align="center"><sub>Landing · Sign in</sub></p>
+
+### Home dashboard
+
+<p align="center">
+  <img src="docs/screenshots/03-home-overview.png" alt="Home — weather, herd KPIs, alerts, THI and health index" width="260" />
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/04-home-production.png" alt="Home — milk production chart over 7 days" width="260" />
+</p>
+
+<p align="center"><sub>Weather & KPIs · Milk production (7 days)</sub></p>
+
+### Herd management
+
+<p align="center">
+  <img src="docs/screenshots/05-herd.png" alt="My Herd — searchable cow list with status filters" width="260" />
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/06-add-cow.png" alt="Add cow form with photo, breed, sex and auto IDs" width="260" />
+</p>
+
+<p align="center"><sub>Herd list & filters · Register a cow</sub></p>
+
+### Cow detail & vocal AI
+
+<p align="center">
+  <img src="docs/screenshots/07-cow-detail-summary.png" alt="Cow detail — summary cards and Parle-moi entry" width="220" />
+  &nbsp;
+  <img src="docs/screenshots/08-cow-detail-activity.png" alt="Cow detail — behavioral activity curve" width="220" />
+  &nbsp;
+  <img src="docs/screenshots/09-parle-moi-vocal.png" alt="Parle-moi — vocal recording and AI classification (cough, normal, ovulation, hunger)" width="220" />
+</p>
+
+<p align="center"><sub>Health summary · Activity curve · <b>Parle-moi</b> vocal classification (API :8008)</sub></p>
+
+---
+
 ## Why this repository matters
 
 - **End-to-end scope**: from tabular sensor pipelines and trained artifacts to a **mobile operator UI** and a **lightweight HTTP inference service** usable on a farm PC or edge device.
@@ -104,8 +152,8 @@ flowchart LR
 ## Installation
 
 ```bash
-git clone https://github.com/Malek-ami/Bovitech
-cd bovitech
+git clone https://github.com/maramfarhat/BoviTech.git
+cd BoviTech
 
 python -m venv .venv
 
