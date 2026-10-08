@@ -77,6 +77,70 @@ Behavior classes supported in production mapping include: *Walking, Standing, Fe
 
 ---
 
+
+## Model cards
+
+Each figure is the card for one Bovitech model. Numbers on the cards match the unified pipeline below.
+
+### Behavior
+
+<p align="center">
+  <img src="docs/readme/behaviour.jpg" alt="Behavior model — Random Forest on collar IMU signals, 7 classes, 82.6 percent accuracy" width="520" />
+</p>
+
+A Random Forest reads **124 collar features** (accelerometer, magnetometer, and head) and labels activity **every second** across **7 classes**. Accuracy is **82.6%**, and macro F1 is **0.673**. The share of lying behaviour is forwarded to the milk model.
+
+### Milk yield
+
+<p align="center">
+  <img src="docs/readme/milk-yield.jpg" alt="Milk yield model — XGBoost, R squared 0.95, MAPE 2.58 percent" width="520" />
+</p>
+
+An XGBoost regressor estimates daily yield in kilograms from **18 features**: behaviour, body temperature, the temperature-humidity index (THI), days in milk, and milk history. **R² is 0.95**, **MAPE is 2.6%** (2.58% on the card), and test RMSE is **1.37 kg**.
+
+### Stress
+
+<p align="center">
+  <img src="docs/readme/stress.jpg" alt="Stress model — BiLSTM with cross-attention, Normal, At-risk, and Stressed" width="520" />
+</p>
+
+A **BiLSTM with cross-attention** fuses three signals — the THI wave, neck temperature, and lying behaviour — into **Normal**, **At-risk**, or **Stressed**. Accuracy is **86.8%** over 3 classes, macro F1 is **0.665**, and the card marks about a **2-hour early warning**.
+
+### Illness
+
+<p align="center">
+  <img src="docs/readme/illness.jpg" alt="Illness model — PPO reinforcement learning with SHAP, Healthy, At-risk, and Ill" width="520" />
+</p>
+
+A **PPO** reinforcement-learning agent classifies **Healthy**, **At-risk**, or **Ill** from a **34-dimensional** state built from behaviour, milk yield, stress, core body temperature, and the barn environment. Training uses a class-weighted loss. The card reports **96.9%** accuracy, and **SHAP** keeps each alert explainable.
+
+### Acoustics
+
+<p align="center">
+  <img src="docs/readme/audio.jpg" alt="Audio model — CNN on a mel-spectrogram, Cough, Estrus, Food, and Normal" width="520" />
+</p>
+
+A **CNN** classifies a **128×128 mel-spectrogram** (librosa) into **Cough**, **Estrus**, **Food**, or **Normal**. The pipeline diagram also places a sklearn baseline next to this CNN, with a 4-class softmax.
+
+### Herd tracking
+
+<p align="center">
+  <img src="docs/readme/gps-tracking.jpg" alt="Herd tracking — LSTM on GPS trajectories with a zone alert" width="520" />
+</p>
+
+An **LSTM** follows the GPS trajectory, detects route deviation, and raises a real-time zone alert. This tracker is the seventh model on the project cards. It sits beside the six-model pipeline rather than inside one of its boxes.
+
+### Chatbot
+
+<p align="center">
+  <img src="docs/readme/chatbot.jpg" alt="Chatbot — Vet, Feed, Meteo, and Vision agents on the mobile app" width="520" />
+</p>
+
+The assistant on the phone joins an **LLM + RAG** branch (farmer questions and alert summaries) with a **vision** branch that reads a behaviour image. Vision validation accuracy is **87.17%**.
+
+---
+
+
 ## High-level architecture
 
 ```mermaid
@@ -99,6 +163,41 @@ flowchart LR
   A -.->|optional| D
   A -.->|optional| E
 ```
+
+
+## Unified pipeline
+
+<p align="center">
+  <img src="docs/readme/unified-pipeline.jpg" alt="BoviTech unified AI pipeline, version 3.0, from sensors to the mobile app" width="640" />
+</p>
+
+This is the v3.0 architecture: **6 AI models**, one shared backend, a chatbot, and the React Native app. Solid arrows are the primary path. Dashed arrows are secondary cross-feeds.
+
+**1. IoT sensor layer.** Six inputs enter together: collar IMU (accelerometer, magnetometer, head), core body temperature, barn THI from temperature and humidity, audio clips (`.wav`, 4 classes), behaviour labels (7 classes, 1 second), and milk records (daily kg and days in milk).
+
+**2. Core models.** Four models run on those signals.
+
+| Model | Method | What it reports |
+|---|---|---|
+| Behaviour | Random Forest | 124 features · accuracy 82.6% · macro F1 0.673 |
+| Milk yield | XGBoost regressor | 18 features · R² 0.95 · MAPE 2.6% |
+| Stress | BiLSTM + attention | 3 classes · accuracy 86.8% · macro F1 0.665 |
+| Audio | CNN + sklearn baseline | 4-class softmax · Cough, Estrus, Food, Normal |
+
+Behaviour sends two cross-feeds: the behaviour proportion into milk yield, and lying behaviour into stress.
+
+**3. Composite models.** These do not read raw sensors on their own. They wait for the core models.
+
+- **Estrus detection** is an XGBoost classifier. It needs behaviour, milk, stress, and THI, and it looks for mounting or agitation, a milk deviation, and a time-window signal. The output is binary, and an alert fires only above a threshold.
+- **Illness prediction** is a reinforcement-learning agent. It needs behaviour, milk, stress, and core body temperature, packed into a 34-dimensional state. A class-weighted loss separates **Healthy**, **At-risk**, and **Ill**.
+
+**4. Shared backend API.** One REST API stores inference and metadata **per cow** and **per day** for behaviour, milk, stress, estrus, illness, and audio.
+
+**5. Chatbot.** Two branches read that API. Branch A is NLP / LLM: farmer questions, alert summaries, a JSON contract, and streaming text. Branch B is vision: a behaviour image, with validation accuracy **87.17%**.
+
+**6. React Native app (iOS and Android).** The same API fills four screens: a dashboard of health scores, alerts for illness, estrus, and stress, a cow profile with milk and behaviour trends, and a chat screen. The app adds push notifications, offline support, and separate vet and farmer roles.
+
+An online feedback loop returns app activity toward the models, and dashboard data can also be read directly from the API.
 
 ---
 
@@ -152,7 +251,7 @@ flowchart LR
 ## Installation
 
 ```bash
-git clone https://github.com/maramfarhat/BoviTech.git
+git clone https://github.com/SalahG005/BoviTech.git
 cd BoviTech
 
 python -m venv .venv
